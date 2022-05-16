@@ -335,7 +335,7 @@ contains
     character*256 name_next
     character*256 tmp_name
     integer*4 nlen, len0, len1, len2, len3
-    integer*4 doy0, year0, mjd0
+    integer*4 doy0, year0, mjd0, year_origin
     integer*4 doy1, year1, mjd1
     integer*4 ierr
     logical*4 is_alive
@@ -346,7 +346,6 @@ contains
   
     lfn_next = 0
     inquire(unit=lfn_this, name=name_this, exist=is_alive)
-400 continue
     if (name_this .eq. '') then
       write (*, *) '###WARNING(next_posfil): open ', trim(name_this)
       return
@@ -406,7 +405,10 @@ contains
       return
     endif
 
+500 continue
+
     mjd0 = modified_julday(doy0, 0, year0)
+    year_origin = year0
     call mjd2doy(mjd0+1, year0, doy0)
 
     if (len_trim(mid_dir) .gt. 0) then
@@ -442,19 +444,25 @@ contains
     lfn_next = get_valid_unit(10)
     open(lfn_next, file=name_next, status='old', iostat=ierr)
     if (ierr .ne. 0) then
-      lfn_next = 0
-      tmp_name = ''
-      len1 = index(name_next, '/',  BACK = .TRUE.)
-      len2 = index(name_next, '\\', BACK = .TRUE.)
-      if (len1 .gt. 0 ) tmp_name = trim(root_dir)//mid_dir(1:4)//'/.'
-      if (len2 .gt. 0 ) tmp_name = trim(root_dir)//mid_dir(1:4)//'\\.'
-      inquire(file=trim(tmp_name), exist=is_alive)
-      if (is_alive) then
-        name_this = name_next
-        goto 400
+      if (year0 .gt. year_origin) then
+        lfn_next = 0
+      else
+        goto 500
       endif
     endif
-
+    !if (ierr .ne. 0) then
+    !  lfn_next = 0
+    !  tmp_name = ''
+    !  len1 = index(name_next, '/',  BACK = .TRUE.)
+    !  len2 = index(name_next, '\\', BACK = .TRUE.)
+    !  if (len1 .gt. 0 ) tmp_name = trim(root_dir)//mid_dir(1:4)//'/.'
+    !  if (len2 .gt. 0 ) tmp_name = trim(root_dir)//mid_dir(1:4)//'\\.'
+    !  inquire(file=trim(tmp_name), exist=is_alive)
+    !  if (is_alive) then
+    !    name_this = name_next
+    !    goto 400
+    !  endif
+    !endif
     return
   end subroutine
     
