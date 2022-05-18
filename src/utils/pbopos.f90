@@ -405,10 +405,10 @@ contains
       return
     endif
 
+    year_origin = year0
 500 continue
 
     mjd0 = modified_julday(doy0, 0, year0)
-    year_origin = year0
     call mjd2doy(mjd0+1, year0, doy0)
 
     if (len_trim(mid_dir) .gt. 0) then
@@ -444,7 +444,7 @@ contains
     lfn_next = get_valid_unit(10)
     open(lfn_next, file=name_next, status='old', iostat=ierr)
     if (ierr .ne. 0) then
-      if (year0 .gt. year_origin) then
+      if (year0 - year_origin .gt. 10) then
         lfn_next = 0
       else
         goto 500
